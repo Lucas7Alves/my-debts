@@ -1,0 +1,77 @@
+### Android ###
+# Arquivos gerados pelo Android Studio
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild
+.cxx
+*.keystore
+*.jks
+
+# Arquivos temporários do Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Arquivos de build
+**/build/
+**/bin/
+**/gen/
+**/out/
+**/target/
+
+# Arquivos de configuração local (chaves, senhas)
+local.properties
+*.properties
+*.json
+
+# Arquivos do Firebase
+google-services.json
+google-services.xml
+
+# Arquivos do Android Studio (IDEs)
+.idea/
+*.iml
+*.iws
+*.ipr
+*.swp
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.bak
+*.hprof
+
+# Arquivos do sistema operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+._*
+
+# Arquivos do macOS
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Arquivos do Windows
+[Tt]humbs.db
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+### Java ###
+# Arquivos compilados
+*.class
+*.jar
+*.war
+*.ear
+
+# Arquivos de logs e dumps
+hs_err_pid*
