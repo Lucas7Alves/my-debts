@@ -1,37 +1,40 @@
 package com.souunit.minhasdividas.entities;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Map;
 
 public class DebtManager {
 
     // ArrayList final ainda permite alteração nos dados da lista
-    private final ArrayList<FixedDebt> fixedDebts;
+    private final Map<Long, FixedDebt> fixedDebts;
+    private static Long id = 0L;
 
-    public DebtManager(ArrayList<FixedDebt> fixedDebts) {
+    public DebtManager(Map<Long, FixedDebt> fixedDebts) {
         this.fixedDebts = fixedDebts;
         //TODO: carregar dados do banco de dados
     }
 
     // methods
-    public boolean createFixedDebt(Long id, String name, double amount, LocalDate dueDate) {
+    public boolean putFixedDebt(String name, double amount, LocalDate dueDate) throws IllegalArgumentException {
+        id++;
         FixedDebt fd = new FixedDebt(id, name, amount, dueDate);
-        return fixedDebts.add(fd);
+        fixedDebts.put(fd.getId(), fd);
+        return true;
     }
 
     public boolean deleteFixedDebt(Long id) {
-        return fixedDebts.removeIf(x -> Objects.equals(x.getId(), id));
+        fixedDebts.remove(id);
+        return true;
     }
 
     public boolean updateFixedDebt(Long id, String name, double amount, LocalDate dueDate) throws IndexOutOfBoundsException {
         FixedDebt fd = new FixedDebt(id, name, amount, dueDate);
-        fixedDebts.set(fixedDebts.indexOf(fd), fd);
+        fixedDebts.put(fd.getId(), fd);
         return true;
     }
 
     // getters and setters
-    public ArrayList<FixedDebt> getFixedDebts() {
+    public Map<Long, FixedDebt> getFixedDebts() {
         return fixedDebts;
     }
 }
