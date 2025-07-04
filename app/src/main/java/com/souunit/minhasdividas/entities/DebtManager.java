@@ -22,6 +22,11 @@ public class DebtManager {
         return true;
     }
 
+    public boolean putFixedDebt(FixedDebt fd) {
+        fixedDebts.put(fd.getId(), fd);
+        return true;
+    }
+
     public boolean deleteFixedDebt(Long id) {
         fixedDebts.remove(id);
         return true;

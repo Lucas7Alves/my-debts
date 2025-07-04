@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private int dayDate, monthDate, yearDate;
@@ -59,12 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
         add_debt.setOnClickListener(v -> showAddItemPopup());
 
-        del_debt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
+        loadOneItem();
 
     }
 
@@ -79,10 +75,71 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         //TODO: CARREGAR DADOS DA LISTA
-        showItems();
-
     }
 
+    private void showItemPopup(Long id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View popupview = LayoutInflater.from(this).inflate(R.layout.popup_show_item, null);
+
+        TextView txtName = popupview.findViewById(R.id.txtName);
+        TextView txtAmount = popupview.findViewById(R.id.txtAmount);
+        TextView txtId = popupview.findViewById(R.id.txtId);
+        Button btnDel = popupview.findViewById(R.id.btnDel);
+        Button btnEdit = popupview.findViewById(R.id.btnEdit);
+        Button btnPaid = popupview.findViewById(R.id.btnPaid);
+        Button btnClose = popupview.findViewById(R.id.btnClose);
+
+        FixedDebt debt = getActuallyDebt(id);
+
+        if (debt != null) {
+            txtName.setText(debt.getName());
+            txtAmount.setText(String.format(Locale.getDefault(), "R$ %.2f", debt.getAmount()));
+            txtId.setText(String.valueOf("ID: " + debt.getId()));
+        } else {
+            Toast.makeText(this, "Houve um erro ao carregar a dívida", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        builder.setView(popupview);
+        Dialog dialog = builder.create();
+
+        btnDel.setOnClickListener(v -> deleteDebt(id));
+        btnEdit.setOnClickListener(v -> editDebt(id));
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        btnPaid.setOnClickListener(v -> paidDebt(id));
+        dialog.show();
+    }
+
+    // aux methods
+
+    private void paidDebt(Long id) {
+        //TODO: logica "pago"
+    }
+
+    private FixedDebt getActuallyDebt(Long id) {
+        Map<Long, FixedDebt> allDebts = manager.getFixedDebts();
+        for (Map.Entry<Long, FixedDebt> entry : allDebts.entrySet()) {
+            if (Objects.equals(entry.getValue().getId(), id)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private void editDebt(Long id) {
+        //TODO: logica de edição
+    }
+
+    private void deleteDebt(Long id) {
+        Map<Long, FixedDebt> allDebts = manager.getFixedDebts();
+
+        for (Long entry : allDebts.keySet()) {
+            if (entry.equals(id)) {
+                manager.deleteFixedDebt(id);
+            }
+        }
+        showItems();
+    }
     private void showAddItemPopup() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View popupView = LayoutInflater.from(this).inflate(R.layout.popup_add_item, null);
@@ -157,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
             dayTextView.setText(String.valueOf(debt.getDueDate().getDayOfMonth()));
             valueTextView.setText(String.format(Locale.getDefault(), "R$ %.2f", debt.getAmount()));
 
+            card.setOnClickListener(v -> showItemPopup(debt.getId()));
             // adicione o card na lista
             debtList.addView(card);
 
@@ -165,5 +223,31 @@ public class MainActivity extends AppCompatActivity {
             params.setMargins(0, 0, 0, 16);
             card.setLayoutParams(params);
         }
+    }
+    private void loadOneItem() {
+
+        LinearLayout debtList = findViewById(R.id.debt_list);
+
+        debtList.removeAllViews();
+
+        FixedDebt debt = new FixedDebt(1L, "Frutiger Aero", 1000, LocalDate.now());
+        View card = LayoutInflater.from(this).inflate(R.layout.card_frutiger_aero, debtList, false);
+
+        TextView nameTextView = card.findViewById(R.id.name);
+        TextView dayTextView = card.findViewById(R.id.dayOfMonth);
+        TextView valueTextView = card.findViewById(R.id.value);
+
+        nameTextView.setText(debt.getName());
+        dayTextView.setText(String.valueOf(debt.getDueDate().getDayOfMonth()));
+        valueTextView.setText(String.format(Locale.getDefault(), "R$ %.2f", debt.getAmount()));
+
+        manager.putFixedDebt(debt);
+        card.setOnClickListener(v -> showItemPopup(debt.getId()));
+        debtList.addView(card);
+
+        // adicione margens ao bottom de cada card
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) card.getLayoutParams();
+        params.setMargins(0, 0, 0, 16);
+        card.setLayoutParams(params);
     }
 }
