@@ -3,6 +3,7 @@ package com.souunit.minhasdividas;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -64,12 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void initListeners() {
-        edit_debt = findViewById(R.id.edit_debt);
-        add_debt= findViewById(R.id.add_debt);
-        del_debt = findViewById(R.id.del_debt);
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -77,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         //TODO: CARREGAR DADOS DA LISTA
     }
 
+
+    // aux methods
     private void showItemPopup(Long id) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View popupview = LayoutInflater.from(this).inflate(R.layout.popup_show_item, null);
@@ -102,15 +99,18 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setView(popupview);
         Dialog dialog = builder.create();
-
-        btnDel.setOnClickListener(v -> deleteDebt(id));
-        btnEdit.setOnClickListener(v -> editDebt(id));
+        btnDel.setOnClickListener(v -> {
+            dialog.dismiss();
+            deleteDebt(id);
+        });
+        btnEdit.setOnClickListener(v -> {
+            dialog.dismiss();
+            editDebt(id);
+        });
         btnClose.setOnClickListener(v -> dialog.dismiss());
         btnPaid.setOnClickListener(v -> paidDebt(id));
         dialog.show();
     }
-
-    // aux methods
 
     private void paidDebt(Long id) {
         //TODO: logica "pago"
@@ -128,6 +128,53 @@ public class MainActivity extends AppCompatActivity {
 
     private void editDebt(Long id) {
         //TODO: logica de edição
+        Log.i("chegou", "antes de pegar o debt");
+        FixedDebt oldDebt = getActuallyDebt(id);
+        Log.i("chegou", "depois de pegar o debt");
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View popupView = LayoutInflater.from(this).inflate(R.layout.popup_add_item, null);
+
+        EditText etName = popupView.findViewById(R.id.etName);
+        EditText etAmount = popupView.findViewById(R.id.etAmount);
+        CalendarView etDate = popupView.findViewById(R.id.etDate);
+        Button btnAdd = popupView.findViewById(R.id.btnAdd);
+
+        etName.setText(oldDebt.getName());
+        etDate.setDate(oldDebt.getDueDate().toEpochDay());
+        etAmount.setText(String.valueOf(oldDebt.getAmount()));
+
+        Calendar calendar = Calendar.getInstance();
+        long currentDate = calendar.getTimeInMillis();
+        etDate.setDate(currentDate, true, true);
+
+        builder.setView(popupView);
+        Dialog dialog = builder.create();
+
+        etDate.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+                dayDate = dayOfMonth;
+                monthDate = month;
+                yearDate = year;
+            }
+        });
+        btnAdd.setOnClickListener(v -> {
+            String newName = etName.getText().toString().trim();
+            String newAmount = etAmount.getText().toString().trim();
+
+            if (!newAmount.isEmpty() && !newName.isEmpty() && dayDate != 0) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                String newDateDue = formatter.format(LocalDate.of(yearDate, monthDate, dayDate));
+
+                manager.updateFixedDebt(id, newName, Double.parseDouble(newAmount), LocalDate.parse(newDateDue, formatter));
+                showItems();
+                dialog.dismiss();
+            } else {
+                Toast.makeText(this, "Preencha todos os campos!", Toast.LENGTH_SHORT).show();
+            }
+        });
+        dialog.show();
     }
 
     private void deleteDebt(Long id) {
@@ -144,8 +191,8 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View popupView = LayoutInflater.from(this).inflate(R.layout.popup_add_item, null);
 
-        EditText etNome = popupView.findViewById(R.id.etNome);
-        EditText etValue = popupView.findViewById(R.id.etValue);
+        EditText etName = popupView.findViewById(R.id.etName);
+        EditText etAmount = popupView.findViewById(R.id.etAmount);
         CalendarView etDate = popupView.findViewById(R.id.etDate);
         Button btnAdd = popupView.findViewById(R.id.btnAdd);
 
@@ -167,17 +214,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnAdd.setOnClickListener(v -> {
-            String nome = etNome.getText().toString().trim();
-            String value = etValue.getText().toString().trim();
+            String name = etName.getText().toString().trim();
+            String value = etAmount.getText().toString().trim();
             long fullDate = etDate.getDate();
 
-            if (!value.isEmpty() && !nome.isEmpty() && dayDate != 0) {
+            if (!value.isEmpty() && !name.isEmpty() && dayDate != 0) {
                 //transforma a data no modelo DIA-MES-ANO
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
                 String dueDate = formatter.format(LocalDate.of(yearDate, monthDate, dayDate));
 
                 //Cria um novo objeto com os dados da dívida
-                manager.putFixedDebt(nome, Double.parseDouble(value), LocalDate.parse(dueDate, formatter));
+                manager.putFixedDebt(name, Double.parseDouble(value), LocalDate.parse(dueDate, formatter));
                 showItems();
                 dialog.dismiss();
             } else {
@@ -249,5 +296,11 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) card.getLayoutParams();
         params.setMargins(0, 0, 0, 16);
         card.setLayoutParams(params);
+    }
+
+    private void initListeners() {
+        edit_debt = findViewById(R.id.edit_debt);
+        add_debt= findViewById(R.id.add_debt);
+        del_debt = findViewById(R.id.del_debt);
     }
 }

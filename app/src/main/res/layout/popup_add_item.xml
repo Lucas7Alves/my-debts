@@ -17,14 +17,14 @@
         android:layout_marginBottom="16dp"/>
 
     <EditText
-        android:id="@+id/etNome"
+        android:id="@+id/etName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Nome"
         android:inputType="text"/>
 
     <EditText
-        android:id="@+id/etValue"
+        android:id="@+id/etAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Valor"
